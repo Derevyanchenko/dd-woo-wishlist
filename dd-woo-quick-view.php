@@ -1,13 +1,13 @@
 <?php
 /*
-Plugin Name: DD WooCommerce Quick View
+Plugin Name: DD WooCommerce Wishlist
 Plugin URI: #
-Description: WooCommerce Quick View plugin for practice plugin development
+Description: WooCommerce Wishlist plugin for practice plugin development
 Version: 1.0
 Author: Danil Derevyanchenko
 Author URI: #
 Licence: GPLv2 or later
-Text Domain: ddQuickView
+Text Domain: ddWishlist
 Domain Path: /lang
 */ 
 
@@ -15,45 +15,73 @@ if( ! defined('ABSPATH') ) {
     die;
 }
 
-define('DDQUICKVIEW_PATH', plugin_dir_path(__FILE__));
+define('DDWISHLIST_PATH', plugin_dir_path(__FILE__));
 
+require DDWISHLIST_PATH . 'inc/helper.php';
 
-require DDMOVIE_PATH . 'inc/helpers.php';
+/**
+ ******************************************
+ * ddWishlist Class
+ ****************************************** 
+ */
 
-// if ( ! class_exists('ddMovieCpt') ) {
-    // require DDMOVIE_PATH . 'inc/class-ddmovie-cpt.php';
-// }
-
-class ddQuickView 
+class ddWishlist 
 {
+
+    private $svgIcon = '<svg class="" title="Like Shopping bag SVG File" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#8899a4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+
     public function __construct() 
     {
-        add_action('admin_enqueue_scripts', [$this, 'enqueue_admin']);
-        add_action('wp_enqueue_scripts', [$this, 'enqueue_frontend']);
+        add_action('wp_enqueue_scripts', [$this, 'enqueue_styles']);
+        add_action('wp_enqueue_scripts', [$this, 'enqueue_scripts']);
+        add_action( 'woocommerce_after_shop_loop_item', [$this, 'ddWishlist_add_wishlist_button'], 20 );
+
     }
 
-         // enqueue admin styles and scripts method
-         public function enqueue_admin() {
-            // wp_enqueue_style('ddBooking_style_admin', plugins_url( '/assets/css/admin/style.css', __FILE__ ));
-            // wp_enqueue_script('ddBooking_script_admin', plugins_url( '/assets/js/admin/scripts.js', __FILE__ ), array('jquery'), '1.0', true);
-        }
-    
-        // enqueue frontend styles and scripts method
-        public function enqueue_frontend() {
-            // wp_enqueue_style('ddBooking_style_frontend', plugins_url( '/assets/css/frontend/style.css', __FILE__ ));
-            // wp_enqueue_script('ddBooking_script_frontend', plugins_url( '/assets/js/frontend/scripts.js', __FILE__ ), array('jquery'), '1.0', true);
-            // wp_enqueue_script('jquery-form');
-        }
-    
-        static function activation() {
-             flush_rewrite_rules();
-        }
-    
-        static function deactivation() {
-            flush_rewrite_rules();
-        }
+    /**
+     * enqueue frontend styles method
+     */
+    public function enqueue_styles()
+    {
+        wp_enqueue_style('ddWishlist_main_style', plugins_url( '/assets/css/main.css', __FILE__ ));
+    }
+
+    /**
+     * enqueue frontend scripts method
+     */
+    public function enqueue_scripts()
+    {
+        wp_enqueue_script('ddWishlist_main_script', plugins_url( '/assets/js/main.js', __FILE__ ), array('jquery'), '1.0', true);
+    }
+
+    /**
+     * generate 'Add to Wishlist' button
+     */
+    public function ddWishlist_add_wishlist_button()
+    {
+        echo '<button class="dd_add_to_wishlist_btn">' . $this->svgIcon . '</button>';
+    }
+
+    /**
+     * activation hook
+     */
+    static function activation() 
+    {
+        flush_rewrite_rules();
+    }
+
+    /**
+     * deactivation hook
+     */
+    static function deactivation()
+    {
+        flush_rewrite_rules();
+    }
 }
 
-if( class_exists('ddQuickView') ) {
-    $ddMovie = new ddQuickView();
+if( class_exists('ddWishlist') ) {
+    $ddWishlist = new ddWishlist();
 } 
+
+register_activation_hook( __FILE__, array( $ddWishlist, 'activation' ) );
+register_deactivation_hook( __FILE__, array( $ddWishlist, 'deactivation' ) );
