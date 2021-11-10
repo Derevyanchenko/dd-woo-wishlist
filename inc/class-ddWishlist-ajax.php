@@ -1,10 +1,10 @@
 <?php
 
 /**
- * ddWishlist Class
+ * ddWishlist_ajax Class
  */
 
-class ddWishlist 
+class ddWishlist_ajax 
 {
     
     public function __construct()
@@ -81,4 +81,4 @@ class ddWishlist
 
 }
 
-$ddWishlist = new ddWishlist();
+$ddWishlist_ajax = new ddWishlist_ajax();

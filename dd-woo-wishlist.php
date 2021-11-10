@@ -27,8 +27,8 @@ if ( ! class_exists( 'ddWishlist_Template_Loader' ) ) {
     require DDWISHLIST_PATH . 'inc/class-ddWishlist-template-loader.php';
 }
 
-if ( ! class_exists( 'ddWishlist' ) ) {
-    require DDWISHLIST_PATH . 'inc/class-ddWishlist.php';
+if ( ! class_exists( 'ddWishlist_ajax' ) ) {
+    require DDWISHLIST_PATH . 'inc/class-ddWishlist-ajax.php';
 }
 
 
@@ -49,8 +49,6 @@ class ddWishlist
         add_action('wp_enqueue_scripts', [$this, 'enqueue_scripts']);
         add_action( 'woocommerce_after_shop_loop_item', [$this, 'ddWishlist_add_wishlist_button'], 20 );
         add_filter( 'display_post_states', [$this, 'ddWishlist_add_display_post_states'], 10, 2 );
-        add_action( 'init', [$this, 'add_to_session'] );
-        // add_action( 'init', [$this, 'ddWishlist_set_wishlist_template_by_default'] );
     }
 
     /**
@@ -60,7 +58,7 @@ class ddWishlist
     {
         global $product;
         $product_id = $product->get_id();
-        $btn_classes = ddWisddWishlisthlist_ajax::check_if_product_exists_in_wishlist($product_id);
+        $btn_classes = ddWishlist_ajax::check_if_product_exists_in_wishlist($product_id);
        
         echo sprintf(
             '<button class="dd_add_to_wishlist_btn %s" data-product_id="%s">%s</button>',
@@ -109,6 +107,7 @@ class ddWishlist
      */
     public function ddWishlist_set_wishlist_template_by_default()
     {
+
         $page = get_page_by_path( 'wishlist-page' );
 
         if ( $page ) {
