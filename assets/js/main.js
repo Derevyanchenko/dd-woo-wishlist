@@ -1,16 +1,19 @@
 jQuery(document).ready(function($) {
 
-    console.log( 'scripts run' );
-
     $(".dd_add_to_wishlist_btn").on( "click", function() {
-        add_to_wishlist($(this));
+        var that = $(this);
+
+        if ( that.hasClass('added') ) {
+            remove_from_wishlist(that);
+        } else {
+            add_to_wishlist(that);
+        }
     } );
 
     /**
-     * add to wishlist ajax function 
+     * add product to wishlist ajax function 
     **/
     function add_to_wishlist(el) {
-
         $.ajax({
             url: ddwishlist_ajax.ajaxurl,
             type: 'POST',
@@ -30,7 +33,31 @@ jQuery(document).ready(function($) {
             },
 
         });
-
     } 
+
+    /**
+     * remove product from wishlist ajax function 
+    **/
+    function remove_from_wishlist(el) {
+    $.ajax({
+        url: ddwishlist_ajax.ajaxurl,
+        type: 'POST',
+        data: {
+            action: 'remove_product_from_wishlist',
+            nonce: ddwishlist_ajax.nonce,
+            product_id: el.data('product_id'),
+        },
+        success: function(data) {
+            console.log('success remove');
+            console.log(data);
+
+            el.removeClass("added");
+        },
+        error: function(error) {
+            console.log(error);
+        },
+
+    });
+        } 
 
 });

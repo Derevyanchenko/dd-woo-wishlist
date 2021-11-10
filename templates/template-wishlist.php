@@ -1,15 +1,12 @@
 <?php
-session_start();
 /*
 Template Name: Template Wishlist 
 */
 
 get_header();
 
-// unset( $_SESSION['wishlist_product_ids'] );
-
-$products = $_SESSION['wishlist_product_ids'];
-pr( $products );
+$products_ids = ddWishlist::get_all_wishlist_products_ids();
+pr( $products_ids );
 
 echo '<h1>Wishlist page Template Custom</h1>';
 

@@ -1,24 +1,31 @@
 <?php
 
-class ddWishlist_ajax 
+/**
+ * ddWishlist Class
+ */
+
+class ddWishlist 
 {
     
     public function __construct()
     {
+        session_start();
         add_action( 'wp_ajax_add_to_wishlist', [ $this, 'add_to_wishlist' ] );
         add_action( 'wp_ajax_nopriv_add_to_wishlist', [ $this, 'add_to_wishlist' ] );
+        add_action( 'wp_ajax_remove_product_from_wishlist', [ $this, 'remove_product_from_wishlist' ] );
+        add_action( 'wp_ajax_nopriv_remove_product_from_wishlist', [ $this, 'remove_product_from_wishlist' ] );
     }
 
+    /**
+     * method whitch add current product to wishlist
+     */
     public function add_to_wishlist()
     {
         if ( ! empty( $_POST ) ) {
             check_ajax_referer('_wpnonce', 'nonce');       
-
             $product_id = $_POST['product_id'];
 
             // add to wishlist session
-            session_start();
-
             if ( ! isset( $_SESSION['wishlist_product_ids'] ) ) {
                 $_SESSION['wishlist_product_ids'] = array();
             }
@@ -33,9 +40,26 @@ class ddWishlist_ajax
         }
     }
 
+    /**
+     * method whitch remove current product from wishlist
+     */
+    public function remove_product_from_wishlist()
+    {
+        if ( ! empty( $_POST ) ) {
+            check_ajax_referer('_wpnonce', 'nonce');       
+
+            $product_id = $_POST['product_id'];
+            unset( $_SESSION['wishlist_product_ids'][$product_id] );
+
+            wp_die();
+        }
+    }
+
+    /**
+     * method whitch check if current product exist in wishlist
+     */
     public static function check_if_product_exists_in_wishlist($prod_id) 
     {
-        session_start();
 
         $btn_classes = '';
 
@@ -46,16 +70,15 @@ class ddWishlist_ajax
         return $btn_classes;
     }
 
+    /**
+     * return wishlist products ids array
+     */
     public static function get_all_wishlist_products_ids()
     {
-            session_start();
-
-            $products = $_SESSION['wishlist_product_ids'];
-            pr( $products );
-
-            wp_die();
+            $products_ids = $_SESSION['wishlist_product_ids'];
+            return $products_ids;
         }
 
 }
 
-$ddWishlist_ajax = new ddWishlist_ajax();
+$ddWishlist = new ddWishlist();

@@ -27,8 +27,8 @@ if ( ! class_exists( 'ddWishlist_Template_Loader' ) ) {
     require DDWISHLIST_PATH . 'inc/class-ddWishlist-template-loader.php';
 }
 
-if ( ! class_exists( 'ddWishlist_ajax' ) ) {
-    require DDWISHLIST_PATH . 'inc/class-ddWishlist-ajax.php';
+if ( ! class_exists( 'ddWishlist' ) ) {
+    require DDWISHLIST_PATH . 'inc/class-ddWishlist.php';
 }
 
 
@@ -58,10 +58,9 @@ class ddWishlist
      */
     public function ddWishlist_add_wishlist_button()
     {
-
         global $product;
         $product_id = $product->get_id();
-        $btn_classes = ddWishlist_ajax::check_if_product_exists_in_wishlist($product_id);
+        $btn_classes = ddWisddWishlisthlist_ajax::check_if_product_exists_in_wishlist($product_id);
        
         echo sprintf(
             '<button class="dd_add_to_wishlist_btn %s" data-product_id="%s">%s</button>',
@@ -69,24 +68,6 @@ class ddWishlist
             $product_id,
             $this->svgIcon
         );
-    }
-
-    public function add_to_session()
-    {
-        session_start();
-
-        // if ( ! isset( $_SESSION['wishlist_product_ids'] ) ) {
-        //     $_SESSION['wishlist_product_ids'] = array();
-        // }
-
-        // $_SESSION['wishlist_product_ids'] = array();
-
-        // array_push($_SESSION['wishlist_product_ids'], 11);
-        // array_push($_SESSION['wishlist_product_ids'], 13);
-
-        // if ( ! isset( $_SESSION['wishlist_products_ids'][$product_id] ) ) {
-        // $_SESSION['wishlist_products_ids'] = $product_id;
-        // }
     }
 
     /**
@@ -128,7 +109,6 @@ class ddWishlist
      */
     public function ddWishlist_set_wishlist_template_by_default()
     {
-
         $page = get_page_by_path( 'wishlist-page' );
 
         if ( $page ) {
