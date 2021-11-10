@@ -27,6 +27,10 @@ if ( ! class_exists( 'ddWishlist_Template_Loader' ) ) {
     require DDWISHLIST_PATH . 'inc/class-ddWishlist-template-loader.php';
 }
 
+if ( ! class_exists( 'ddWishlist_ajax' ) ) {
+    require DDWISHLIST_PATH . 'inc/class-ddWishlist-ajax.php';
+}
+
 
 /**
  ******************************************
@@ -45,23 +49,8 @@ class ddWishlist
         add_action('wp_enqueue_scripts', [$this, 'enqueue_scripts']);
         add_action( 'woocommerce_after_shop_loop_item', [$this, 'ddWishlist_add_wishlist_button'], 20 );
         add_filter( 'display_post_states', [$this, 'ddWishlist_add_display_post_states'], 10, 2 );
+        add_action( 'init', [$this, 'add_to_session'] );
         // add_action( 'init', [$this, 'ddWishlist_set_wishlist_template_by_default'] );
-    }
-
-    /**
-     * enqueue frontend styles method
-     */
-    public function enqueue_styles()
-    {
-        wp_enqueue_style('ddWishlist_main_style', plugins_url( '/assets/css/main.css', __FILE__ ));
-    }
-
-    /**
-     * enqueue frontend scripts method
-     */
-    public function enqueue_scripts()
-    {
-        wp_enqueue_script('ddWishlist_main_script', plugins_url( '/assets/js/main.js', __FILE__ ), array('jquery'), '1.0', true);
     }
 
     /**
@@ -69,7 +58,35 @@ class ddWishlist
      */
     public function ddWishlist_add_wishlist_button()
     {
-        echo '<button class="dd_add_to_wishlist_btn">' . $this->svgIcon . '</button>';
+
+        global $product;
+        $product_id = $product->get_id();
+        $btn_classes = ddWishlist_ajax::check_if_product_exists_in_wishlist($product_id);
+       
+        echo sprintf(
+            '<button class="dd_add_to_wishlist_btn %s" data-product_id="%s">%s</button>',
+            $btn_classes,
+            $product_id,
+            $this->svgIcon
+        );
+    }
+
+    public function add_to_session()
+    {
+        session_start();
+
+        // if ( ! isset( $_SESSION['wishlist_product_ids'] ) ) {
+        //     $_SESSION['wishlist_product_ids'] = array();
+        // }
+
+        // $_SESSION['wishlist_product_ids'] = array();
+
+        // array_push($_SESSION['wishlist_product_ids'], 11);
+        // array_push($_SESSION['wishlist_product_ids'], 13);
+
+        // if ( ! isset( $_SESSION['wishlist_products_ids'][$product_id] ) ) {
+        // $_SESSION['wishlist_products_ids'] = $product_id;
+        // }
     }
 
     /**
@@ -118,6 +135,31 @@ class ddWishlist
             update_post_meta( $page->ID, '_wp_page_template', 'templates/template-wishlist.php' );
         }
     }
+
+    /**
+     * enqueue frontend styles method
+     */
+    public function enqueue_styles()
+    {
+        wp_enqueue_style('ddWishlist_main_style', plugins_url( '/assets/css/main.css', __FILE__ ));
+    }
+
+    /**
+     * enqueue frontend scripts method
+     */
+    public function enqueue_scripts()
+    {
+        wp_register_script('ddwishlist_main_script', plugins_url( '/assets/js/main.js', __FILE__ ), array('jquery'), time() );
+
+        wp_localize_script('ddwishlist_main_script', 'ddwishlist_ajax', array(
+            'ajaxurl' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('_wpnonce'),
+            'title' => esc_html__('ddWishlist test title', 'ddWishlist'),
+        ));
+
+        wp_enqueue_script( 'ddwishlist_main_script' );
+    }
+
 
 
     /**
