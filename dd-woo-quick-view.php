@@ -13,11 +13,20 @@ Domain Path: /lang
 
 if( ! defined('ABSPATH') ) {
     die;
-}
+}  
 
 define('DDWISHLIST_PATH', plugin_dir_path(__FILE__));
 
 require DDWISHLIST_PATH . 'inc/helper.php';
+
+if ( ! class_exists( 'Gamajo_Template_Loader' ) ) {
+    require DDWISHLIST_PATH . 'inc/class-gamajo-template-loader.php';
+}
+
+if ( ! class_exists( 'ddWishlist_Template_Loader' ) ) {
+    require DDWISHLIST_PATH . 'inc/class-ddWishlist-template-loader.php';
+}
+
 
 /**
  ******************************************
@@ -35,7 +44,8 @@ class ddWishlist
         add_action('wp_enqueue_scripts', [$this, 'enqueue_styles']);
         add_action('wp_enqueue_scripts', [$this, 'enqueue_scripts']);
         add_action( 'woocommerce_after_shop_loop_item', [$this, 'ddWishlist_add_wishlist_button'], 20 );
-
+        add_filter( 'display_post_states', [$this, 'ddWishlist_add_display_post_states'], 10, 2 );
+        // add_action( 'init', [$this, 'ddWishlist_set_wishlist_template_by_default'] );
     }
 
     /**
@@ -63,10 +73,60 @@ class ddWishlist
     }
 
     /**
+     * generate archive page wishlist
+     */
+    private function ddWishlist_generate_wishlist_archive_page()
+    {
+        if ( !function_exists( 'wc_create_page' ) ) { 
+            include_once dirname(WC_PLUGIN_FILE) . '/includes/admin/wc-admin-functions.php';
+        } 
+
+        $wishlistPageId = wc_create_page( 
+            'wishlist-page', 
+            '', 
+            'Wishlist', 
+            '', 
+            0, 
+            'publish'
+        );
+
+        return $wishlistPageId;
+
+    }
+
+    /**
+     * Add post states for Wishlist page
+     */
+    public function ddWishlist_add_display_post_states($post_states, $post) {
+
+		if( $post->post_name == 'wishlist-page' ) {
+            $post_states[] = __('Wishlist Page', 'ddWishlist');
+		} 
+
+		return $post_states;
+	}
+
+    /**
+     * Set page template 'Wishlist template' by default for page 'Wishlist' 
+     */
+    public function ddWishlist_set_wishlist_template_by_default()
+    {
+
+        $page = get_page_by_path( 'wishlist-page' );
+
+        if ( $page ) {
+            update_post_meta( $page->ID, '_wp_page_template', 'templates/template-wishlist.php' );
+        }
+    }
+
+
+    /**
      * activation hook
      */
     static function activation() 
     {
+        $this->ddWishlist_generate_wishlist_archive_page();
+        $this->ddWishlist_set_wishlist_template_by_default();
         flush_rewrite_rules();
     }
 
