@@ -48,6 +48,8 @@ class ddWishlist
         add_action('wp_enqueue_scripts', [$this, 'enqueue_styles']);
         add_action('wp_enqueue_scripts', [$this, 'enqueue_scripts']);
         add_action( 'woocommerce_after_shop_loop_item', [$this, 'ddWishlist_add_wishlist_button'], 20 );
+        add_action( 'init', [$this, 'ddWishlist_generate_wishlist_archive_page'] );
+        add_action( 'init', [$this, 'ddWishlist_set_wishlist_template_by_default'] );
         add_filter( 'display_post_states', [$this, 'ddWishlist_add_display_post_states'], 10, 2 );
     }
 
@@ -71,7 +73,7 @@ class ddWishlist
     /**
      * generate archive page wishlist
      */
-    private function ddWishlist_generate_wishlist_archive_page()
+    public function ddWishlist_generate_wishlist_archive_page()
     {
         if ( !function_exists( 'wc_create_page' ) ) { 
             include_once dirname(WC_PLUGIN_FILE) . '/includes/admin/wc-admin-functions.php';
@@ -146,8 +148,8 @@ class ddWishlist
      */
     static function activation() 
     {
-        $this->ddWishlist_generate_wishlist_archive_page();
-        $this->ddWishlist_set_wishlist_template_by_default();
+        // $this->ddWishlist_generate_wishlist_archive_page();
+        // $this->ddWishlist_set_wishlist_template_by_default();
         flush_rewrite_rules();
     }
 
