@@ -48,6 +48,7 @@ class ddWishlist
         add_action('wp_enqueue_scripts', [$this, 'enqueue_styles']);
         add_action('wp_enqueue_scripts', [$this, 'enqueue_scripts']);
         add_action( 'woocommerce_after_shop_loop_item', [$this, 'ddWishlist_add_wishlist_button'], 20 );
+        add_action( 'woocommerce_single_product_summary', [$this, 'ddWishlist_add_wishlist_button'], 15 );
         add_action( 'init', [$this, 'ddWishlist_generate_wishlist_archive_page'] );
         add_action( 'init', [$this, 'ddWishlist_set_wishlist_template_by_default'] );
         add_filter( 'display_post_states', [$this, 'ddWishlist_add_display_post_states'], 10, 2 );

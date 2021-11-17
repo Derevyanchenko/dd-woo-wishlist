@@ -9,6 +9,7 @@ li.product {
     right: 15px;
     top: 15px;
     padding: 0;
+    background: transparent !important;
 }
 
 .dd_add_to_wishlist_btn.added svg {
