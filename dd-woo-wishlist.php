@@ -31,7 +31,6 @@ if ( ! class_exists( 'ddWishlist_ajax' ) ) {
     require DDWISHLIST_PATH . 'inc/class-ddWishlist-ajax.php';
 }
 
-
 /**
  ******************************************
  * ddWishlist Class
