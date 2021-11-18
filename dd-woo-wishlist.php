@@ -139,6 +139,9 @@ class ddWishlist
         }
     }
 
+    /**
+     * Create settings page for 'Wishlist' 
+     */
     public function ddWishlist_create_settings_pages()
     {
         if( function_exists('acf_add_options_page') ) {
