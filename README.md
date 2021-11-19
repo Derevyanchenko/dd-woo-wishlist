@@ -1,2 +1,2 @@
-# dd-woo-quick-view
-WooCommerce Quick Wiew plugin
+# dd-woo-wishlist
+WooCommerce Wishlist
