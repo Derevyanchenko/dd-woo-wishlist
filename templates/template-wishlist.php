@@ -63,5 +63,7 @@ $wishlist_prods_id = ddWishlist_ajax::get_all_wishlist_products_ids();
 </table>
 
 <?php
+} else {
+    _e('Your Wishlist is empty.', 'ddWishlist'); 
 }
 get_footer();

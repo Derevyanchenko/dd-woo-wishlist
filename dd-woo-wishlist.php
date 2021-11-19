@@ -14,6 +14,7 @@ Domain Path: /lang
 if( ! defined('ABSPATH') ) {
     die;
 }  
+session_start();
 
 define('DDWISHLIST_PATH', plugin_dir_path(__FILE__));
 
@@ -140,25 +141,6 @@ if( function_exists('acf_add_local_field_group') ):
                 'ui' => 1,
                 'ui_on_text' => 'Yes',
                 'ui_off_text' => 'No',
-            ),
-            array(
-                'key' => 'field_6196ce468dbe0',
-                'label' => 'Message to unauthorized users when they try to add items to their wishlist',
-                'name' => 'message_to_unauthorized_users',
-                'type' => 'wysiwyg',
-                'instructions' => '',
-                'required' => 0,
-                'conditional_logic' => 0,
-                'wrapper' => array(
-                    'width' => '',
-                    'class' => '',
-                    'id' => '',
-                ),
-                'default_value' => '',
-                'tabs' => 'all',
-                'toolbar' => 'full',
-                'media_upload' => 1,
-                'delay' => 0,
             ),
             array(
                 'key' => 'field_6196cfaf8dbe5',
@@ -294,6 +276,62 @@ if( function_exists('acf_add_local_field_group') ):
 //     return false;
 // }
 
+/**
+ * method whitch check if current product exist in wishlist
+ */
+function check_if_product_exists_in_wishlist($prod_id) 
+{
+    $allow_wishlist_unauthorized = get_field('allow_wishlist_unauthorized', 'option');
+    $cur_user_id = get_current_user_id();
+
+    if ( is_user_logged_in() ) {
+        $btn_classes = db_check_if_product_exists_in_wishlist($cur_user_id, $prod_id);
+
+    } else if ( true == $allow_wishlist_unauthorized &&  false == is_user_logged_in()  ) {
+
+        $btn_classes = session_check_if_product_exists_in_wishlist($cur_user_id, $prod_id);
+
+    } else {
+
+    }
+
+    return $btn_classes;
+
+}
+
+/**
+ * method whitch check if current product exist in wishlist -db
+ */
+function db_check_if_product_exists_in_wishlist($cur_user_id, $prod_id)
+{
+    $btn_classes = "";
+
+    global $wpdb;
+    $result = $wpdb->get_results("SELECT * FROM $wpdb->usermeta WHERE meta_key='ddwishlist_products' AND meta_value=". $prod_id ." AND user_id=". $cur_user_id);
+
+    if ( isset( $result[0]->meta_value) && $result[0]->meta_value == $prod_id ) {
+        $btn_classes = "added";
+    } else {
+        $btn_classes = "";
+    }
+
+    return $btn_classes;
+}
+
+/**
+ * method whitch check if current product exist in wishlist - session
+ */
+function session_check_if_product_exists_in_wishlist($cur_user_id, $prod_id)
+{
+    $btn_classes = '';
+
+    if ( isset( $_SESSION['wishlist_product_ids'][$prod_id] ) ) {
+        $btn_classes = 'added';
+    } else $btn_classes = '';
+
+    return $btn_classes;
+}
+
 
 /**
  ******************************************
@@ -311,12 +349,24 @@ class ddWishlist
     {
         add_action('wp_enqueue_scripts', [$this, 'enqueue_styles']);
         add_action('wp_enqueue_scripts', [$this, 'enqueue_scripts']);
-        add_action( 'woocommerce_after_shop_loop_item', [$this, 'ddWishlist_add_wishlist_button'], 20 );
-        add_action( 'woocommerce_single_product_summary', [$this, 'ddWishlist_add_wishlist_button'], 15 );
+
+        if ( ! empty( get_field('add_to_wishlist_btn_custom_hook_shop_page', 'option') ) ) {
+            add_action( get_field('add_to_wishlist_btn_custom_hook_shop_page', 'option'), [$this, 'ddWishlist_add_wishlist_button'], 20 );
+        } else {
+            add_action( 'woocommerce_after_shop_loop_item', [$this, 'ddWishlist_add_wishlist_button'], 20 );
+        }
+
+        if ( ! empty( get_field('add_to_wishlist_btn_custom_hook_single_product', 'option') ) ) {
+            add_action( get_field('add_to_wishlist_btn_custom_hook_single_product', 'option'), [$this, 'ddWishlist_add_wishlist_button'], 20 );
+        } else {
+            add_action( 'woocommerce_single_product_summary', [$this, 'ddWishlist_add_wishlist_button'], 15 );
+        }
+
         add_action( 'init', [$this, 'ddWishlist_generate_wishlist_archive_page'] );
         add_action( 'init', [$this, 'ddWishlist_set_wishlist_template_by_default'] );
         add_filter( 'display_post_states', [$this, 'ddWishlist_add_display_post_states'], 10, 2 );
         add_action( 'init', [$this, 'ddWishlist_create_settings_pages'] );
+        add_action( 'wp_head', [$this, 'ddWishlist_add_dinamic_styles'] );
     }
 
     /**
@@ -324,9 +374,11 @@ class ddWishlist
      */
     public function ddWishlist_add_wishlist_button()
     {
+        // $ddWishlist_ajax = new ddWishlist_ajax();
+        
         global $product;
         $product_id = $product->get_id();
-        $btn_classes = ddWishlist_ajax::check_if_product_exists_in_wishlist($product_id);
+        $btn_classes = check_if_product_exists_in_wishlist($product_id);
        
         echo sprintf(
             '<button class="dd_add_to_wishlist_btn %s" data-product_id="%s">%s</button>',
@@ -411,6 +463,19 @@ class ddWishlist
             // ));
             
         }
+    }
+
+    public function ddWishlist_add_dinamic_styles()
+    {
+        echo "<style>
+        .dd_add_to_wishlist_btn svg {
+            stroke: " . get_field("default_color_for_add_to_wishlist_btn", "option") .";
+        }
+        .dd_add_to_wishlist_btn.added svg {
+            fill: " . get_field("active_color_for_add_to_wishlist_btn", "option") .";
+            stroke: " . get_field("active_color_for_add_to_wishlist_btn", "option") .";
+        }
+        </style>";
     }
 
     /**
