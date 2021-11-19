@@ -10,6 +10,12 @@ jQuery(document).ready(function($) {
         }
     } );
 
+    $('button.remove_from_wishlist').on("click", function() {
+        var that = $(this);
+
+        remove_from_wishlist(that);
+    });
+
     /**
      * add product to wishlist ajax function 
     **/
@@ -39,25 +45,29 @@ jQuery(document).ready(function($) {
      * remove product from wishlist ajax function 
     **/
     function remove_from_wishlist(el) {
-    $.ajax({
-        url: ddwishlist_ajax.ajaxurl,
-        type: 'POST',
-        data: {
-            action: 'remove_product_from_wishlist',
-            nonce: ddwishlist_ajax.nonce,
-            product_id: el.data('product_id'),
-        },
-        success: function(data) {
-            console.log('success remove');
-            console.log(data);
 
-            el.removeClass("added");
-        },
-        error: function(error) {
-            console.log(error);
-        },
+        $.ajax({
+            url: ddwishlist_ajax.ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'remove_product_from_wishlist',
+                nonce: ddwishlist_ajax.nonce,
+                product_id: el.data('product_id'),
+            },
+            success: function(data) {
+                console.log('success remove');
+                console.log(data);
 
-    });
+                el.removeClass("added");
+                if ( el.hasClass( 'remove_from_wishlist' ) ) {
+                    el.closest('.cart_item').remove();
+                }        
+            },
+            error: function(error) {
+                console.log(error);
+            },
+
+        });
         } 
 
 });
